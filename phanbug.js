@@ -50,6 +50,7 @@ class Phanbug {
     }
 
     const config = JSON.parse(fs.readFileSync('./phanbug.config.json').toString());
+    console.log(`Watching file changes at directory ${config.sourceDir}`);
     fs.watch(config.sourceDir, () => {
       const { execSync } = require('child_process');
       console.log(execSync(`rsync -arvh ${config.sourceDir}/ ${config.targetDir}`).toString());
