@@ -76,6 +76,7 @@ class Phanbug {
     if (args[3] === undefined || args[4] === undefined) {
       console.log('Missing file name and line number');
       this.displayHelpForAction('break');
+      process.exit(1);
     }
   }
 }
