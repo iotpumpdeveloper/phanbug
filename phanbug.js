@@ -1,3 +1,8 @@
+/**
+ * phanbug init
+ * phanbug watch
+ * phanbug break [file] [linenumber] //set a break point at a particular line in a file
+ */
 const actionMap = {};
 actionMap.init = {
   help: 'Initialize phanbug.config.json',
@@ -11,6 +16,12 @@ actionMap.watch = {
     phanbug.watch();
   }
 };
+actionMap.break = {
+  help: 'Set a breakpoint at a particular line in a file (break [file] [linenumber])',
+  handler: () => {
+    phanbug.setBreakPoint();
+  }
+};
 
 class Phanbug {
   displayHelp() {
@@ -18,6 +29,10 @@ class Phanbug {
     Object.keys(actionMap).forEach(action => {
       console.log(`${action} - ${actionMap[action].help}`);
     });
+  }
+
+  displayHelpForAction(action) {
+      console.log(`${action} - ${actionMap[action].help}`);
   }
 
   /**
@@ -55,6 +70,13 @@ class Phanbug {
       const { execSync } = require('child_process');
       console.log(execSync(`rsync -arvh ${config.sourceDir}/ ${config.targetDir}`).toString());
     });
+  }
+
+  setBreakPoint() {
+    if (args[3] === undefined || args[4] === undefined) {
+      console.log('Missing file name and line number');
+      this.displayHelpForAction('break');
+    }
   }
 }
 

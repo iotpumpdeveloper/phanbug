@@ -1,2 +1,3 @@
 #!/bin/bash
-node phanbug.js $1 $2 $3
+scriptDir=`dirname $0`
+node $scriptDir/phanbug.js $1 $2 $3
