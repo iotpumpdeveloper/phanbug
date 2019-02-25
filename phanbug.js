@@ -24,6 +24,10 @@ actionMap.break = {
 };
 
 class Phanbug {
+  constructor() {
+    this.config = JSON.parse(fs.readFileSync('./phanbug.config.json').toString());
+  }
+
   displayHelp() {
     console.log('Available commands:');
     Object.keys(actionMap).forEach(action => {
@@ -64,11 +68,10 @@ class Phanbug {
       process.exit(1);
     }
 
-    const config = JSON.parse(fs.readFileSync('./phanbug.config.json').toString());
-    console.log(`Watching file changes at directory ${config.sourceDir}`);
-    fs.watch(config.sourceDir, () => {
+    console.log(`Watching file changes at directory ${this.config.sourceDir}`);
+    fs.watch(this.config.sourceDir, () => {
       const { execSync } = require('child_process');
-      console.log(execSync(`rsync -arvh ${config.sourceDir}/ ${config.targetDir}`).toString());
+      console.log(execSync(`rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`).toString());
     });
   }
 
@@ -78,12 +81,24 @@ class Phanbug {
       this.displayHelpForAction('break');
       process.exit(1);
     }
+
+    const targetFile = `${this.config.targetDir}/${args[3]}`;
+    if (!fs.existsSync(targetFile)) {
+      console.log(`${targetFile} does not exist!`);
+      process.exit(1);
+    }
+
+    const lines = fs.readFileSync(targetFile).toString().split("\n");
+    const lineNumber = parseInt(args[4]);
+    lines[lineNumber - 1] += "var_dump(get_defined_vars());exit;";
+
+    const newFileContent = lines.join("\n").trim();
+    console.log(newFileContent);
   }
 }
 
 const fs = require('fs');
 const args = process.argv;
-/*const config = JSON.parse(fs.readFileSync('./phanbug.config.json').toString());*/
 const phanbug = new Phanbug();
 
 if (args.length < 3) {
