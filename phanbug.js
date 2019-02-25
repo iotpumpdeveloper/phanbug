@@ -89,11 +89,20 @@ class Phanbug {
     }
 
     const lines = fs.readFileSync(targetFile).toString().split("\n");
+    const numOfLines = lines.length;
+
+    //first, remove all var_dumps in each line, thus clearing up all previous breakpoints
+    const regex = /var_dump(.*)exit;/gi;
+    for (let i = 0; i < numOfLines; i++) {
+      lines[i] = lines[i].replace(regex, '');
+    }
+
+    //now add the new breakpoint
     const lineNumber = parseInt(args[4]);
     lines[lineNumber - 1] += "var_dump(get_defined_vars());exit;";
 
     const newFileContent = lines.join("\n").trim();
-    console.log(newFileContent);
+    fs.writeFileSync(targetFile, newFileContent);
   }
 }
 
