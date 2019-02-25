@@ -1,7 +1,7 @@
 /**
  * phanbug init
  * phanbug watch
- * phanbug break [file] [linenumber] //set a break point at a particular line in a file
+ * phanbug break [file] [line_number] ([variable_to_inspect])//set a break point at a particular line in a file
  */
 const actionMap = {};
 actionMap.init = {
@@ -17,7 +17,7 @@ actionMap.watch = {
   }
 };
 actionMap.break = {
-  help: 'Set a breakpoint at a particular line in a file (break [file] [linenumber])',
+  help: 'Set a breakpoint at a particular line in a file (break [file] [line_number] ([variable_to_inspect]))',
   handler: () => {
     phanbug.setBreakPoint();
   }
@@ -92,14 +92,20 @@ class Phanbug {
     const numOfLines = lines.length;
 
     //first, remove all var_dumps in each line, thus clearing up all previous breakpoints
-    const regex = /var_dump(.*)exit;/gi;
+    const regex = /print_r(.*)exit;/gi;
     for (let i = 0; i < numOfLines; i++) {
       lines[i] = lines[i].replace(regex, '');
     }
 
     //now add the new breakpoint
     const lineNumber = parseInt(args[4]);
-    lines[lineNumber - 1] += "var_dump(get_defined_vars());exit;";
+
+    if (args[5] ===  undefined) {
+      lines[lineNumber - 1] += "print_r(get_defined_vars());exit;";
+    } else {
+      const variableToInspect = args[5];
+      lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
+    }
 
     const newFileContent = lines.join("\n").trim();
     fs.writeFileSync(targetFile, newFileContent);
