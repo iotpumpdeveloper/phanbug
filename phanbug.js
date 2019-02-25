@@ -1,6 +1,23 @@
+const actionMap = {};
+actionMap.init = {
+  help: 'Initialize phanbug.config.json',
+  handler: () => {
+    phanbug.init();
+  }
+};
+actionMap.watch = {
+  help: 'Watch source directory changes',
+  handler: () => {
+    phanbug.watch();
+  }
+};
+
 class Phanbug {
   displayHelp() {
-    console.log('This is phanbug command line helping');
+    console.log('Available commands:');
+    Object.keys(actionMap).forEach(action => {
+      console.log(`${action} - ${actionMap[action].help}`);
+    });
   }
 
   /**
@@ -49,16 +66,8 @@ if (args.length < 3) {
   phanbug.displayHelp();
 } else {
   const action = args[2].toLowerCase();
-  const actionMap = {
-    'init': () => {
-      phanbug.init();
-    },
-    'watch': () => {
-      phanbug.watch();
-    }
-  }
   if (actionMap[action] !== undefined) {
-    actionMap[action]();
+    (actionMap[action].handler)();
   } else {
     console.log('Invalid phanbug command');
     phanbug.displayHelp();
