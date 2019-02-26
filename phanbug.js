@@ -34,6 +34,12 @@ actionMap.clear = {
     phanbug.clearBreakPoints();
   }
 };
+actionMap.clean = {
+  help: 'Clean up all breakpoints for all files',
+  handler: () => {
+    phanbug.cleanAllBreakPoints();
+  }
+}
 
 class Phanbug {
   constructor() {
@@ -167,6 +173,9 @@ class Phanbug {
     } else {
       console.log(execSync(`php ${targetFile}`).toString());
     }
+
+    //finally, clean all breakpoints
+    this.cleanAllBreakPoints();
   }
 
   clearBreakPoints() {
@@ -191,6 +200,10 @@ class Phanbug {
 
     const newFileContent = lines.join("\n").trim();
     fs.writeFileSync(targetFile, newFileContent);
+  }
+
+  cleanAllBreakPoints() {
+    execSync(`rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`);
   }
 }
 
