@@ -22,12 +22,18 @@ actionMap.break = {
     phanbug.setBreakPoint();
   }
 };
+actionMap.inspect = {
+  help: 'Inspect particular file in a particular line (inspect [file] [line_number] ([variable_to_inspect]))',
+  handler: () => {
+    phanbug.inspect();
+  }
+};
 actionMap.clear = {
   help: 'Clear all the breakpoints of a specific file (clear [file])',
   handler: () => {
     phanbug.clearBreakPoints();
   }
-}
+};
 
 class Phanbug {
   constructor() {
@@ -49,7 +55,6 @@ class Phanbug {
    * initializing configuration
    */
   init() {
-    const { execSync } = require('child_process');
     //create the target directory and the source directory
     const mkdirTarget = execSync('mkdir -p ./target'); //synced directory
     const mkdirSource = execSync('mkdir -p ./source'); //version control directory
@@ -76,7 +81,6 @@ class Phanbug {
 
     console.log(`Watching file changes at directory ${this.config.sourceDir}`);
     fs.watch(this.config.sourceDir, () => {
-      const { execSync } = require('child_process');
       console.log(execSync(`rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`).toString());
     });
   }
@@ -88,6 +92,8 @@ class Phanbug {
       process.exit(1);
     }
 
+    //for convenient, replace the "source/" in args[3]
+    args[3] = args[3].replace('source/','');
     const targetFile = `${this.config.targetDir}/${args[3]}`;
     if (!fs.existsSync(targetFile)) {
       console.log(`${targetFile} does not exist!`);
@@ -115,6 +121,49 @@ class Phanbug {
 
     const newFileContent = lines.join("\n").trim();
     fs.writeFileSync(targetFile, newFileContent);
+
+    //now run the target file
+    console.log(execSync(`php ${targetFile}`).toString());
+  }
+
+  inspect() {
+    if (args[3] === undefined || args[4] === undefined) {
+      console.log('Missing file name and line number');
+      this.displayHelpForAction('inspect');
+      process.exit(1);
+    }
+
+    //for convenient, replace the "source/" in args[3]
+    args[3] = args[3].replace('source/','');
+    const targetFile = `${this.config.targetDir}/${args[3]}`;
+    if (!fs.existsSync(targetFile)) {
+      console.log(`${targetFile} does not exist!`);
+      process.exit(1);
+    }
+
+    //first, sync up the files
+    const cmd = `rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`;
+    execSync(cmd);
+
+    //now add the new breakpoint
+    const lines = fs.readFileSync(targetFile).toString().split("\n");
+    const numOfLines = lines.length;
+
+    const lineNumber = parseInt(args[4]);
+
+    if (args[5] ===  undefined) {
+      lines[lineNumber - 1] += "print_r(get_defined_vars());exit;";
+    } else {
+      const variableToInspect = args[5];
+      lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
+    }
+
+    const newFileContent = lines.join("\n").trim();
+    fs.writeFileSync(targetFile, newFileContent);
+
+    //now run the target file
+    console.log(execSync(`php ${targetFile}`).toString());
+
   }
 
   clearBreakPoints() {
@@ -145,6 +194,7 @@ class Phanbug {
 const fs = require('fs');
 const args = process.argv;
 const phanbug = new Phanbug();
+const { execSync } = require('child_process');
 
 if (args.length < 3) {
   phanbug.displayHelp();
