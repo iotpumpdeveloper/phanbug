@@ -58,6 +58,10 @@ class Phanbug {
     }
   }
 
+  getFileSyncCmd() {
+    return `rsync -arvh --exclude='.git/' ${this.config.sourceDir}/ ${this.config.targetDir} --delete`;
+  }
+
   /**
    * watch the source directory and sync the files to the target directory
    */
@@ -68,8 +72,9 @@ class Phanbug {
     }
 
     console.log(`Watching file changes at directory ${this.config.sourceDir}`);
+    const fileSyncCmd = this.getFileSyncCmd();
     fs.watch(this.config.sourceDir, () => {
-      console.log(execSync(`rsync -arvh --exclude='.git/' ${this.config.sourceDir}/ ${this.config.targetDir}`).toString());
+      console.log(execSync(fileSyncCmd).toString());
     });
   }
 
@@ -81,7 +86,7 @@ class Phanbug {
     }
 
     //first, sync up the files
-    const fileSyncCmd = `rsync -arvh --exclude='.git/' ${this.config.sourceDir}/ ${this.config.targetDir}`;
+    const fileSyncCmd = this.getFileSyncCmd();
     execSync(fileSyncCmd );
 
     //for convenient, replace the "source/" in args[3]
