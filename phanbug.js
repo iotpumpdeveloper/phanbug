@@ -153,7 +153,7 @@ class Phanbug {
 
     if (args[5] ===  undefined) {
       lines[lineNumber - 1] += "print_r(get_defined_vars());exit;";
-    } else {
+      } else {
       const variableToInspect = args[5];
       lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
     }
@@ -161,9 +161,12 @@ class Phanbug {
     const newFileContent = lines.join("\n").trim();
     fs.writeFileSync(targetFile, newFileContent);
 
-    //now run the target file
-    console.log(execSync(`php ${targetFile}`).toString());
-
+    //now run the entry file
+    if (this.config.entryCommand !== undefined) {
+      console.log(execSync(`${this.config.entryCommand}`).toString());
+    } else {
+      console.log(execSync(`php ${targetFile}`).toString());
+    }
   }
 
   clearBreakPoints() {
