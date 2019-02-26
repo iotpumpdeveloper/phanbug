@@ -22,6 +22,12 @@ actionMap.break = {
     phanbug.setBreakPoint();
   }
 };
+actionMap.clear = {
+  help: 'Clear all the breakpoints of a specific file (clear [file])',
+  handler: () => {
+    phanbug.clearBreakPoints();
+  }
+}
 
 class Phanbug {
   constructor() {
@@ -105,6 +111,30 @@ class Phanbug {
     } else {
       const variableToInspect = args[5];
       lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
+    }
+
+    const newFileContent = lines.join("\n").trim();
+    fs.writeFileSync(targetFile, newFileContent);
+  }
+
+  clearBreakPoints() {
+    if (args[3] === undefined) {
+      console.log('Missing file name');
+      this.displayHelpForAction('clear');
+      process.exit(1);
+    }
+
+    const targetFile = `${this.config.targetDir}/${args[3]}`;
+    if (!fs.existsSync(targetFile)) {
+      console.log(`${targetFile} does not exist!`);
+      process.exit(1);
+    }
+
+    const lines = fs.readFileSync(targetFile).toString().split("\n");
+    const numOfLines = lines.length;
+    const regex = /print_r(.*)exit;/gi;
+    for (let i = 0; i < numOfLines; i++) {
+      lines[i] = lines[i].replace(regex, '');
     }
 
     const newFileContent = lines.join("\n").trim();
