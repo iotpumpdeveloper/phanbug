@@ -152,7 +152,7 @@ class Phanbug {
     const lineNumber = parseInt(args[4]);
 
     if (args[5] ===  undefined) {
-      lines[lineNumber - 1] += "print_r(get_defined_vars());exit;";
+      lines[lineNumber - 1] += "print_r(array_diff_key(get_defined_vars() + array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST','argc','argv']), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
       } else {
       const variableToInspect = args[5];
       lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
