@@ -1,7 +1,7 @@
 /**
  * phanbug init
  * phanbug watch
- * phanbug break [file] [line_number] ([variable_to_inspect])//set a break point at a particular line in a file
+ * phanbug inspect [file] [line_number] ([variable_to_inspect])
  */
 const actionMap = {};
 actionMap.init = {
@@ -16,30 +16,12 @@ actionMap.watch = {
     phanbug.watch();
   }
 };
-actionMap.break = {
-  help: 'Set a breakpoint at a particular line in a file (break [file] [line_number] ([variable_to_inspect]))',
-  handler: () => {
-    phanbug.setBreakPoint();
-  }
-};
 actionMap.inspect = {
   help: 'Inspect particular file in a particular line (inspect [file] [line_number] ([variable_to_inspect]))',
   handler: () => {
     phanbug.inspect();
   }
 };
-actionMap.clear = {
-  help: 'Clear all the breakpoints of a specific file (clear [file])',
-  handler: () => {
-    phanbug.clearBreakPoints();
-  }
-};
-actionMap.clean = {
-  help: 'Clean up all breakpoints for all files',
-  handler: () => {
-    phanbug.cleanAllBreakPoints();
-  }
-}
 
 class Phanbug {
   constructor() {
@@ -91,47 +73,6 @@ class Phanbug {
     });
   }
 
-  setBreakPoint() {
-    if (args[3] === undefined || args[4] === undefined) {
-      console.log('Missing file name and line number');
-      this.displayHelpForAction('break');
-      process.exit(1);
-    }
-
-    //for convenient, replace the "source/" in args[3]
-    args[3] = args[3].replace('source/','');
-    const targetFile = `${this.config.targetDir}/${args[3]}`;
-    if (!fs.existsSync(targetFile)) {
-      console.log(`${targetFile} does not exist!`);
-      process.exit(1);
-    }
-
-    const lines = fs.readFileSync(targetFile).toString().split("\n");
-    const numOfLines = lines.length;
-
-    //first, remove all var_dumps in each line, thus clearing up all previous breakpoints
-    const regex = /print_r(.*)exit;/gi;
-    for (let i = 0; i < numOfLines; i++) {
-      lines[i] = lines[i].replace(regex, '');
-    }
-
-    //now add the new breakpoint
-    const lineNumber = parseInt(args[4]);
-
-    if (args[5] ===  undefined) {
-      lines[lineNumber - 1] += "print_r(get_defined_vars());exit;";
-    } else {
-      const variableToInspect = args[5];
-      lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
-    }
-
-    const newFileContent = lines.join("\n").trim();
-    fs.writeFileSync(targetFile, newFileContent);
-
-    //now run the target file
-    console.log(execSync(`php ${targetFile}`).toString());
-  }
-
   inspect() {
     if (args[3] === undefined || args[4] === undefined) {
       console.log('Missing file name and line number');
@@ -174,35 +115,7 @@ class Phanbug {
       console.log(execSync(`php ${targetFile}`).toString());
     }
 
-    //finally, clean all breakpoints
-    this.cleanAllBreakPoints();
-  }
-
-  clearBreakPoints() {
-    if (args[3] === undefined) {
-      console.log('Missing file name');
-      this.displayHelpForAction('clear');
-      process.exit(1);
-    }
-
-    const targetFile = `${this.config.targetDir}/${args[3]}`;
-    if (!fs.existsSync(targetFile)) {
-      console.log(`${targetFile} does not exist!`);
-      process.exit(1);
-    }
-
-    const lines = fs.readFileSync(targetFile).toString().split("\n");
-    const numOfLines = lines.length;
-    const regex = /print_r(.*)exit;/gi;
-    for (let i = 0; i < numOfLines; i++) {
-      lines[i] = lines[i].replace(regex, '');
-    }
-
-    const newFileContent = lines.join("\n").trim();
-    fs.writeFileSync(targetFile, newFileContent);
-  }
-
-  cleanAllBreakPoints() {
+    //finally, clean all breakpoints by re-syncing the source and target directory
     execSync(`rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`);
   }
 }
