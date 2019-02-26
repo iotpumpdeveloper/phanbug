@@ -1,0 +1,23 @@
+{
+  "name": "phanbug",
+  "version": "1.0.0",
+  "description": "a tool to inspect php files",
+  "main": "phanbug.js",
+  "dependencies": {
+    "md5": "^2.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iotpumpdeveloper/phanbug.git"
+  },
+  "author": "jim thunderbird",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iotpumpdeveloper/phanbug/issues"
+  },
+  "homepage": "https://github.com/iotpumpdeveloper/phanbug#readme"
+}
