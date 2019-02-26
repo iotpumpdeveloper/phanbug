@@ -69,7 +69,7 @@ class Phanbug {
 
     console.log(`Watching file changes at directory ${this.config.sourceDir}`);
     fs.watch(this.config.sourceDir, () => {
-      console.log(execSync(`rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`).toString());
+      console.log(execSync(`rsync -arvh --exclude='.git/' ${this.config.sourceDir}/ ${this.config.targetDir}`).toString());
     });
   }
 
@@ -80,6 +80,10 @@ class Phanbug {
       process.exit(1);
     }
 
+    //first, sync up the files
+    const fileSyncCmd = `rsync -arvh --exclude='.git/' ${this.config.sourceDir}/ ${this.config.targetDir}`;
+    execSync(fileSyncCmd );
+
     //for convenient, replace the "source/" in args[3]
     args[3] = args[3].replace('source/','');
     const targetFile = `${this.config.targetDir}/${args[3]}`;
@@ -87,10 +91,6 @@ class Phanbug {
       console.log(`${targetFile} does not exist!`);
       process.exit(1);
     }
-
-    //first, sync up the files
-    const cmd = `rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`;
-    execSync(cmd);
 
     //now add the new breakpoint
     const lines = fs.readFileSync(targetFile).toString().split("\n");
@@ -100,7 +100,7 @@ class Phanbug {
 
     if (args[5] ===  undefined) {
       lines[lineNumber - 1] += "print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
-      } else {
+    } else {
       const variableToInspect = args[5];
       lines[lineNumber - 1] += `print_r($${variableToInspect});exit;`;
     }
@@ -116,7 +116,7 @@ class Phanbug {
     }
 
     //finally, clean all breakpoints by re-syncing the source and target directory
-    execSync(`rsync -arvh ${this.config.sourceDir}/ ${this.config.targetDir}`);
+    execSync(fileSyncCmd );
   }
 }
 
