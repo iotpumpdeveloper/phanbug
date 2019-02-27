@@ -3,6 +3,7 @@
 /**
  * Usage: 
  * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9
+ * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length
  */
 class Phanbug
 {
@@ -66,6 +67,12 @@ class Phanbug
         $output = shell_exec($this->cmd);
         if ($output === NULL) {
             print "Fail running command {$this->cmd}\n";
+            //even when fail running the command, we still try to sync the backup directory to the working directory
+            //sync backup dir to working dir
+            if ($this->syncDirs($this->backupDir, $this->workingDir) === NULL) {
+                print "Error syncing up backup directory and the working directory\n";
+                exit();
+            }
             exit();
         }
         print $output."\n";
