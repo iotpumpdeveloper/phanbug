@@ -150,7 +150,6 @@ class Phanbug
         }
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
-
     }
 }
 
