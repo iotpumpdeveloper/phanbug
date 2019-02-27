@@ -7,8 +7,6 @@
  */
 class Phanbug
 {
-    private $workingDir;
-    private $backupDir;
     private $action;
     private $cmd;
     private $cmdOptions;
@@ -20,9 +18,6 @@ class Phanbug
     private $phanbugInspectBeginningBlock = "/* phanbug_inspect_start */";    
 
     public function __construct() {
-        $this->workingDir = getcwd();
-        $this->backupDir = "{$this->workingDir}/.phanbug/source";
-        $this->setupDirs(); //creat the directories
         //process the command line arguments
         $this->processArgs();
     }
@@ -50,13 +45,7 @@ class Phanbug
 
         //clean all previous breakpoints
         $this->cleanBreakpoints($sourceFile);
-
-        //sync working dir to backup dir
-        if ($this->syncDirs($this->workingDir, $this->backupDir) === NULL) {
-            print "Error syncing up working directory to the backup directory\n";
-            exit();
-        } 
-
+        
         //now add breakpoint
         $this->addBreakPoint($sourceFile, $lineNumber, $options);
 
@@ -64,30 +53,12 @@ class Phanbug
         $output = shell_exec($this->cmd);
         if ($output === NULL) {
             print "Fail running command {$this->cmd}\n";
-            //even when fail running the command, we still try to sync the backup directory to the working directory
-            //sync backup dir to working dir
-            if ($this->syncDirs($this->backupDir, $this->workingDir) === NULL) {
-                print "Error syncing up backup directory and the working directory\n";
-                exit();
-            }
             exit();
         }
         print $output."\n";
 
-        //sync backup dir to working dir
-        if ($this->syncDirs($this->backupDir, $this->workingDir) === NULL) {
-            print "Error syncing up backup directory and the working directory\n";
-            exit();
-        }
-    }
-
-    private function setupDirs() {
-        shell_exec("mkdir -p {$this->backupDir}");
-        //check if the directories exist or not
-        if (!file_exists("{$this->backupDir}")) {
-            print "Failed creating phanbug directories\n";
-            exit();
-        }
+        //clean up the break points again
+        $this->cleanBreakpoints($sourceFile);
     }
 
     private function processArgs() {
@@ -118,10 +89,6 @@ class Phanbug
         }
 
         $this->{$this->action}();
-    }
-
-    private function syncDirs($sourceDir, $targetDir) {
-        return shell_exec("rsync -arvh --exclude='.git/' --exclude='.phanbug/' {$sourceDir}/ {$targetDir} --delete");
     }
 
     private function cleanBreakpoints($sourceFile) {
