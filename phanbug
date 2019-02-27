@@ -27,6 +27,7 @@ class Phanbug
         $this->cmdOptions = array_merge($this->cmdOptions, [
             "file:",     // the file to inspect
             "line:",    // the line number
+            "variable:" // the variable to inspect
         ]);
         
         $options = getopt("", $this->cmdOptions);
@@ -51,8 +52,13 @@ class Phanbug
 
         //add breakpoint
         $lines = explode("\n", file_get_contents($sourceFile));
-        $lines[$lineNumber - 1] .= "print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
-
+        if (!isset($options['variable'])) {
+            //no variable is specified, inspect all user defined variables
+            $lines[$lineNumber - 1] .= "print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
+        } else {
+            //just inspect the specific variable
+            $lines[$lineNumber - 1] .= "print_r(\${$options['variable']});exit;";
+        }
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
 
@@ -62,7 +68,7 @@ class Phanbug
             print "Fail running command {$this->cmd}\n";
             exit();
         }
-        print $output;
+        print $output."\n";
 
         //sync backup dir to working dir
         if ($this->syncDirs($this->backupDir, $this->workingDir) === NULL) {
