@@ -49,8 +49,7 @@ class Phanbug
         $lineNumber = $options['line'];
 
         //clean all previous breakpoints
-        $content = file_get_contents($sourceFile);
-        $content = $this->cleanBreakpoints($content);
+        $this->cleanBreakpoints($sourceFile);
 
         //sync working dir to backup dir
         if ($this->syncDirs($this->workingDir, $this->backupDir) === NULL) {
@@ -58,17 +57,8 @@ class Phanbug
             exit();
         } 
 
-        //add breakpoint
-        $lines = explode("\n", $content);
-        if (!isset($options['variable'])) {
-            //no variable is specified, inspect all user defined variables
-            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:'; print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
-        } else {
-            //just inspect the specific variable
-            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:';print_r(\${$options['variable']});exit;";
-        }
-        $newFileContent = implode("\n", $lines);
-        file_put_contents($sourceFile, $newFileContent);
+        //now add breakpoint
+        $this->addBreakPoint($sourceFile, $lineNumber);
 
         //run the cmd
         $output = shell_exec($this->cmd);
@@ -134,7 +124,8 @@ class Phanbug
         return shell_exec("rsync -arvh --exclude='.git/' --exclude='.phanbug/' {$sourceDir}/ {$targetDir} --delete");
     }
 
-    private function cleanBreakpoints($content) {
+    private function cleanBreakpoints($sourceFile) {
+        $content = file_get_contents($sourceFile);
         $lines = explode("\n", $content);
         $numOfLines = count($lines);
         for ($i = 0; $i < $numOfLines; $i++) {
@@ -143,7 +134,23 @@ class Phanbug
                 $lines[$i] = substr($lines[$i], 0, $pos);
             } 
         }
-        return implode("\n", $lines);
+        $newFileContent = implode("\n", $lines);
+        file_put_contents($sourceFile, $newFileContent);
+    }
+
+    private function addBreakPoint($sourceFile, $lineNumber) {
+        $content = file_get_contents($sourceFile);
+        $lines = explode("\n", $content);
+        if (!isset($options['variable'])) {
+            //no variable is specified, inspect all user defined variables
+            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:'; print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
+        } else {
+            //just inspect the specific variable
+            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:';print_r(\${$options['variable']});exit;";
+        }
+        $newFileContent = implode("\n", $lines);
+        file_put_contents($sourceFile, $newFileContent);
+
     }
 }
 
