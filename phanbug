@@ -58,7 +58,7 @@ class Phanbug
         } 
 
         //now add breakpoint
-        $this->addBreakPoint($sourceFile, $lineNumber);
+        $this->addBreakPoint($sourceFile, $lineNumber, $options);
 
         //run the cmd
         $output = shell_exec($this->cmd);
@@ -138,7 +138,7 @@ class Phanbug
         file_put_contents($sourceFile, $newFileContent);
     }
 
-    private function addBreakPoint($sourceFile, $lineNumber) {
+    private function addBreakPoint($sourceFile, $lineNumber, $options) {
         $content = file_get_contents($sourceFile);
         $lines = explode("\n", $content);
         if (!isset($options['variable'])) {
