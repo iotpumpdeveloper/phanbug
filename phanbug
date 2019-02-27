@@ -1,3 +1,109 @@
-#!/bin/bash
-scriptDir=`dirname $0`
-node $scriptDir/phanbug.js $1 $2 $3 $4
+#!/usr/bin/env php
+<?php
+/**
+ * Usage: 
+ * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9
+ */
+class Phanbug
+{
+    private $workingDir;
+    private $backupDir;
+    private $action;
+    private $cmd;
+    private $cmdOptions;
+
+    private $actionMap = [
+        'inspect' => 'inspect'
+    ];
+
+    public function __construct() {
+        $this->workingDir = getcwd();
+        $this->backupDir = "{$this->workingDir}/.phanbug";
+        //process the command line arguments
+        $this->processArgs();
+    }
+
+    public function inspect() {
+        $this->cmdOptions = array_merge($this->cmdOptions, [
+            "file:",     // the file to inspect
+            "line:",    // the line number
+        ]);
+        
+        $options = getopt("", $this->cmdOptions);
+
+        if (!isset($options['file'])) {
+            print "Missing file: --file\n";
+            exit();
+        }
+        if (!isset($options['line'])) {
+            print "Missing line number: --line\n";
+            exit();
+        }
+
+        $sourceFile = $options['file'];
+        $lineNumber = $options['line'];
+
+        //sync working dir to backup dir
+        if ($this->syncDirs($this->workingDir, $this->backupDir) === NULL) {
+            print "Error syncing up working directory to the backup directory\n";
+            exit();
+        } 
+
+        //add breakpoint
+        $lines = explode("\n", file_get_contents($sourceFile));
+        $lines[$lineNumber - 1] .= "print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
+
+        $newFileContent = implode("\n", $lines);
+        file_put_contents($sourceFile, $newFileContent);
+
+        //run the cmd
+        $output = shell_exec($this->cmd);
+        if ($output === NULL) {
+            print "Fail running command {$this->cmd}\n";
+            exit();
+        }
+        print $output;
+
+        //sync backup dir to working dir
+        if ($this->syncDirs($this->backupDir, $this->workingDir) === NULL) {
+            print "Error syncing up backup directory and the working directory\n";
+            exit();
+        }
+    }
+
+    private function processArgs() {
+        $this->cmdOptions = [
+            "action:",     // the action
+            "cmd:",    // the command to run
+        ];
+        $options = getopt("", $this->cmdOptions);
+
+        if (!isset($options['action'])) {
+            print "Missing action: --action\n";
+            exit();
+        }
+
+        if (!isset($options['cmd'])) {
+            print "Missing cmd: --cmd\n";
+            exit();
+        }
+
+        $this->action = $options['action'];
+        $this->cmd = $options['cmd'];
+
+        if (!isset($this->actionMap[$this->action])) {
+            print "Invalid action {$this->action}\n";
+            print "Available actions:\n";
+            print implode("\n", array_keys($this->actionMap))."\n";
+            exit();
+        }
+
+        $this->{$this->action}();
+    }
+
+    private function syncDirs($sourceDir, $targetDir) {
+        return shell_exec("rsync -arvh --exclude='.git/' --exclude='.phanbug/' {$sourceDir}/ {$targetDir} --delete");
+    }
+}
+
+new Phanbug();
