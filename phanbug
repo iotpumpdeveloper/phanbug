@@ -19,7 +19,8 @@ class Phanbug
 
     public function __construct() {
         $this->workingDir = getcwd();
-        $this->backupDir = "{$this->workingDir}/.phanbug";
+        $this->backupDir = "{$this->workingDir}/.phanbug/source";
+        $this->setupDirs(); //creat the directories
         //process the command line arguments
         $this->processArgs();
     }
@@ -80,6 +81,15 @@ class Phanbug
         //sync backup dir to working dir
         if ($this->syncDirs($this->backupDir, $this->workingDir) === NULL) {
             print "Error syncing up backup directory and the working directory\n";
+            exit();
+        }
+    }
+
+    private function setupDirs() {
+        shell_exec("mkdir -p {$this->backupDir}");
+        //check if the directories exist or not
+        if (!file_exists("{$this->backupDir}")) {
+            print "Failed creating phanbug directories\n";
             exit();
         }
     }
