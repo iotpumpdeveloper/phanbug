@@ -26,6 +26,8 @@ class Phanbug
     }
 
     public function inspect() {
+        $phanbugBeginningBlock = "/* phanbug_inspect_start */";    
+
         $this->cmdOptions = array_merge($this->cmdOptions, [
             "file:",     // the file to inspect
             "line:",    // the line number
@@ -56,10 +58,10 @@ class Phanbug
         $lines = explode("\n", file_get_contents($sourceFile));
         if (!isset($options['variable'])) {
             //no variable is specified, inspect all user defined variables
-            $lines[$lineNumber - 1] .= "print 'phanbug breakpoint:'; print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
+            $lines[$lineNumber - 1] .= "$phanbugBeginningBlock print 'phanbug breakpoint:'; print_r(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
         } else {
             //just inspect the specific variable
-            $lines[$lineNumber - 1] .= "print 'phanbug breakpoint:';print_r(\${$options['variable']});exit;";
+            $lines[$lineNumber - 1] .= "$phanbugBeginningBlock print 'phanbug breakpoint:';print_r(\${$options['variable']});exit;";
         }
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
