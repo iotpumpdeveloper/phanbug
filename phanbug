@@ -4,6 +4,8 @@
  * Usage: 
  * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9
  * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length
+ * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length --hardbreak 1
+ * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length --hardbreak 0
  */
 class Phanbug
 {
@@ -109,9 +111,9 @@ class Phanbug
     private function addBreakPoint($sourceFile, $lineNumber, $options) {
         $content = file_get_contents($sourceFile);
         $lines = explode("\n", $content);
-        $exitBlock = "exit()";
-        if (!isset($options['hardbreak'])) {
-            $exitBlock = "";
+        $exitBlock = "";
+        if (isset($options['hardbreak']) && $options['hardbreak'] == 1) {
+            $exitBlock = "exit";
         }
         if (!isset($options['variable'])) {
             //no variable is specified, inspect all user defined variables
