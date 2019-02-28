@@ -1,12 +1,14 @@
 <?php
 function phanbug_inspect($variable, $isSpecificVar = false)
 {
+    ini_set('memory_limit','16M');
     print "\n\n";
     print "phanbug breakpoint:\n";
     print "variable details:\n";
     if (!$isSpecificVar) {
         $variable = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
-        print_r(json_decode(json_encode($variable)));
+        var_dump($variable);
+        $variable = json_decode(json_encode($variable), true);
     } else {
         print_r(json_decode(json_encode($variable)));
     }
