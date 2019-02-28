@@ -26,7 +26,8 @@ class Phanbug
         $this->cmdOptions = array_merge($this->cmdOptions, [
             "file:",     // the file to inspect
             "line:",    // the line number
-            "variable:" // the variable to inspect
+            "variable:", // the variable to inspect
+            "hardbreak:" // do we want to immediately stop on breakpoint or just let it run
         ]);
         
         $options = getopt("", $this->cmdOptions);
@@ -108,12 +109,16 @@ class Phanbug
     private function addBreakPoint($sourceFile, $lineNumber, $options) {
         $content = file_get_contents($sourceFile);
         $lines = explode("\n", $content);
+        $exitBlock = "exit()";
+        if (!isset($options['hardbreak'])) {
+            $exitBlock = "";
+        }
         if (!isset($options['variable'])) {
             //no variable is specified, inspect all user defined variables
-            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:'; var_export(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));exit;";
+            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:'; var_export(array_diff_key(get_defined_vars(), array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));$exitBlock;print PHP_EOL;";
         } else {
             //just inspect the specific variable
-            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:';var_export(\${$options['variable']});exit;";
+            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} print 'phanbug breakpoint:';var_export(\${$options['variable']});$exitBlock;print PHP_EOL;";
         }
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
