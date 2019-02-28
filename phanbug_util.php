@@ -27,6 +27,6 @@ function phanbug_inspect($variable, $isSpecificVar = false)
         $result[] = ($i + 1)  . ')' . substr($trace[$i], strpos($trace[$i], ' ')); // replace '#someNum' with '$i)', set the right ordering
     }
 
-    print implode("\n\t", $result);
+    print implode("\n", $result);
     print "\n";
 }
