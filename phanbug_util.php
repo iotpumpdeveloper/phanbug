@@ -28,9 +28,9 @@ function phanbug_inspect($variable, $isSpecificVar = false)
 
     for ($i = 0; $i < $length; $i++)
     {
-        $result[] = ($i + 1)  . ')' . substr($trace[$i], strpos($trace[$i], ' ')); // replace '#someNum' with '$i)', set the right ordering
+        $result[] = ($i + 1)  . '.' . substr($trace[$i], strpos($trace[$i], ' '));
     }
 
     print implode("\n", $result);
-    print "\n";
+    print "\n\n";
 }
