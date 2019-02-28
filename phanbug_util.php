@@ -1,14 +1,14 @@
 <?php
-function phanbug_inspect($variable, $isSpecificVar = false)
+function phanbug_inspect($variable, $isSpecificVar = false, $depth)
 {
     print "\n\n";
     print "phanbug breakpoint:\n";
     print "variable details:\n";
     if (!$isSpecificVar) {
         $variable = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
-        echo phanbug_var_debug($variable);
+        echo phanbug_var_debug($variable, $depth);
     } else {
-        echo phanbug_var_debug($variable);
+        echo phanbug_var_debug($variable, $depth);
     }
 
     print "\n\n";
@@ -33,7 +33,7 @@ function phanbug_inspect($variable, $isSpecificVar = false)
     print "\n\n";
 }
 
-function phanbug_var_debug($variable,$strlen=100,$width=25,$depth=5,$i=0,&$objects = array())
+function phanbug_var_debug($variable,$depth,$strlen=100,$width=25,$i=0,&$objects = array())
 {
     $search = array("\0", "\a", "\b", "\f", "\n", "\r", "\t", "\v");
     $replace = array('\0', '\a', '\b', '\f', '\n', '\r', '\t', '\v');

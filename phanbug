@@ -6,6 +6,7 @@
  * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length
  * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length --hardbreak 1
  * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length --hardbreak 0
+ * phanbug --cmd "php hello.php" --action inspect --file libs/util.php --line 9 --variable length --hardbreak 0 --depth 5
  */
 class Phanbug
 {
@@ -29,7 +30,8 @@ class Phanbug
             "file:",     // the file to inspect
             "line:",    // the line number
             "variable:", // the variable to inspect
-            "hardbreak:" // do we want to immediately stop on breakpoint or just let it run
+            "hardbreak:", // do we want to immediately stop on breakpoint or just let it run,
+            "depth:" //the maximum depth for variable inspection
         ]);
         
         $options = getopt("", $this->cmdOptions);
@@ -116,12 +118,18 @@ class Phanbug
         if (isset($options['hardbreak']) && $options['hardbreak'] == 1) {
             $exitBlock = "exit";
         }
+    
+        $depth = 3;
+        if (isset($options['depth'])) {
+            $depth = $options['depth'];
+        }
+
         if (!isset($options['variable'])) {
             //no variable is specified, inspect all user defined variables
-            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(get_defined_vars());$exitBlock;";
+            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
         } else {
             //just inspect the specific variable
-            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(\${$options['variable']}, true);$exitBlock;";
+            $lines[$lineNumber - 1] .= "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(\${$options['variable']}, true, $depth);$exitBlock;";
         }
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
