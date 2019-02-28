@@ -20,7 +20,7 @@ function phanbug_inspect($variable, $isSpecificVar = false)
     array_shift($trace); // remove {main}
     array_pop($trace); // remove call to this method
     $length = count($trace);
-    $result = array();
+    $result = [];
 
     for ($i = 0; $i < $length; $i++)
     {
