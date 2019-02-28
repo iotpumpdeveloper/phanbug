@@ -1,10 +1,14 @@
 <?php
 function phanbug_inspect($variable, $isSpecificVar = false)
 {
+    print "\n\n";
     print "phanbug breakpoint:\n";
     print "variable details:\n";
     if (!$isSpecificVar) {
-        var_export(array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv'])));
+        $vars = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
+        foreach($vars as $name => $val) {
+            print $name . " : " . $val . "\n";
+        }
     } else {
         var_export($variable);
     }
