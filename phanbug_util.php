@@ -1,6 +1,7 @@
 <?php
 function phanbug_inspect($variable, $isSpecificVar = false, $depth)
 {
+    echo "Phanbug Inpsect:\n";
     if (!$isSpecificVar) {
         $variable = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
         echo phanbug_var_debug($variable, $depth);
