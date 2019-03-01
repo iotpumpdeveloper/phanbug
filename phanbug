@@ -124,17 +124,17 @@ class Phanbug
             $depth = $options['depth'];
         }
 
-        $breakpointBlock = "";
+        $inspectBlock = "";
 
         if (!isset($options['variable'])) {
             //no variable is specified, inspect all user defined variables
-            $breakpointBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
+            $inspectBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
         } else {
             //just inspect the specific variable
-            $breakpointBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(\${$options['variable']}, true, $depth);$exitBlock;";
+            $inspectBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');\$phanbug_debug_var=\${$options['variable']};phanbug_inspect(\$phanbug_debug_var, true, $depth);$exitBlock;";
         }
 
-        $lines[$lineNumber - 1] .= $breakpointBlock; 
+        $lines[$lineNumber - 1] .= $inspectBlock; 
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
     }
