@@ -1,9 +1,6 @@
 <?php
 function phanbug_inspect($variable, $isSpecificVar = false, $depth)
 {
-    print "\n\n";
-    print "phanbug breakpoint:\n";
-    print "variable details:\n";
     if (!$isSpecificVar) {
         $variable = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
         echo phanbug_var_debug($variable, $depth);
@@ -99,9 +96,11 @@ function phanbug_var_debug($variable,$depth,$strlen=100,$width=25,$i=0,&$objects
 
     if ($i>0) return $string;
 
+    /*
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
     do $caller = array_shift($backtrace); while ($caller && !isset($caller['file']));
     if ($caller) $string = $caller['file'].':'.$caller['line']."\n".$string;
+     */
 
     return $string;
 }
