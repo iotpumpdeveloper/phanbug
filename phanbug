@@ -130,6 +130,10 @@ class Phanbug
             //no variable is specified, inspect all user defined variables
             $inspectBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');phanbug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
         } else {
+            //do not include the first $ sign
+            if($options['variable'][0] === '$') {
+                $options['variable'] = substr($options['variable'],1);
+            }
             //just inspect the specific variable
             $inspectBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');\$phanbug_debug_var=\${$options['variable']};phanbug_inspect(\$phanbug_debug_var, true, $depth);$exitBlock;";
         }
