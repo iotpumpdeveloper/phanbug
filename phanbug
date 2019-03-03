@@ -54,16 +54,23 @@ class Phanbug
         //now add breakpoint
         $this->addBreakPoint($sourceFile, $lineNumber, $options);
 
-        //run the cmd
-        $output = shell_exec($this->cmd);
-        if ($output === NULL) {
-            print "Fail running command {$this->cmd}\n";
-            exit();
-        }
-        print $output."\n";
+        //check the syntax of the source file with the breakpoint
+        if (!$this->isSyntaxOk($sourceFile)) {
+            //there is syntax errors, clean the breakpoint
+            $this->cleanBreakpoints($sourceFile);
+            print "Error adding breakpoint\n";
+        } else {
+            //run the cmd
+            $output = shell_exec($this->cmd);
+            if ($output === NULL) {
+                print "Fail running command {$this->cmd}\n";
+                exit();
+            }
+            print $output."\n";
 
-        //clean up the break points again
-        $this->cleanBreakpoints($sourceFile);
+            //clean up the break points again
+            $this->cleanBreakpoints($sourceFile);
+        }
     }
 
     private function processArgs() {
@@ -118,7 +125,7 @@ class Phanbug
         if (isset($options['hardbreak']) && $options['hardbreak'] == 1) {
             $exitBlock = "exit";
         }
-    
+
         $depth = 3;
         if (isset($options['depth'])) {
             $depth = $options['depth'];
@@ -151,6 +158,15 @@ class Phanbug
         $lines[$lineNumber - 1] .= $inspectBlock; 
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
+    }
+
+    private function isSyntaxOk($sourceFile) {
+        $output = shell_exec("php -l $sourceFile");
+        $result = false;
+        if (strpos($output, "No syntax errors detected") !== FALSE) {
+            $result = true;
+        }
+        return $result;
     }
 }
 
