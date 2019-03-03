@@ -133,7 +133,8 @@ class Phanbug
             $variableBlock = "";
             //do not include the first $ sign
             if($options['variable'][0] === '$') {
-                $variableBlock = '$'.substr($options['variable'],1);
+                $options['variable'] = substr($options['variable'],1);
+                $variableBlock = '$'.$options['variable'];
             } else {
                 if (substr($options['variable'], 0, 4) === 'self') {
                     $variableBlock = $options['variable'];
@@ -144,7 +145,7 @@ class Phanbug
                 }
             }
             //just inspect the specific variable
-            $inspectBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');\$phanbug_debug_var=$variableBlock;phanbug_inspect(\$phanbug_debug_var, true, $depth);$exitBlock;";
+            $inspectBlock = "{$this->phanbugInspectBeginningBlock} require_once('{$phanbugDir}/phanbug_util.php');\$phanbug_debug_var=$variableBlock;phanbug_inspect(\$phanbug_debug_var, true, $depth, '{$options['variable']}');$exitBlock;";
         }
 
         $lines[$lineNumber - 1] .= $inspectBlock; 
