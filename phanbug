@@ -64,10 +64,9 @@ class Phanbug
             $output = shell_exec($this->cmd);
             if ($output === NULL) {
                 print "Fail running command {$this->cmd}\n";
-                exit();
+            } else {
+                print $output."\n";
             }
-            print $output."\n";
-
             //clean up the break points again
             $this->cleanBreakpoints($sourceFile);
         }
@@ -143,9 +142,11 @@ class Phanbug
                 $options['variable'] = substr($options['variable'],1);
                 $variableBlock = '$'.$options['variable'];
             } else {
-                if (substr($options['variable'], 0, 4) === 'self') {
+                if (substr($options['variable'], 0, 6) === 'self::') {
                     $variableBlock = $options['variable'];
-                } else if (substr($options['variable'], 0, 6) === 'static') {
+                } else if (substr($options['variable'], 0, 8) === 'static::') {
+                    $variableBlock = $options['variable'];
+                } else if (substr($options['variable'], 0, 8) === 'parent::') {
                     $variableBlock = $options['variable'];
                 } else {
                     $variableBlock = '$'.$options['variable'];
