@@ -20,7 +20,7 @@ function phanbug_inspect($variable, $isSpecificVar = false, $depth, $variableNam
     // reverse array to make steps line up chronologically
     $trace = array_reverse($trace);
     array_shift($trace); // remove {main}
-    array_pop($trace); // remove call to this method
+    //array_pop($trace); // remove call to this method
     $length = count($trace);
     $result = [];
 
