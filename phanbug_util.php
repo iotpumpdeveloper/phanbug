@@ -33,7 +33,7 @@ function phanbug_inspect($variable, $isSpecificVar = false, $depth, $variableNam
     print "\n\n";
 }
 
-function phanbug_var_debug($variable,$depth,$strlen=100,$width=25,$i=0,&$objects = array())
+function phanbug_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects = array())
 {
     $search = array("\0", "\a", "\b", "\f", "\n", "\r", "\t", "\v");
     $replace = array('\0', '\a', '\b', '\f', '\n', '\r', '\t', '\v');
@@ -49,10 +49,10 @@ function phanbug_var_debug($variable,$depth,$strlen=100,$width=25,$i=0,&$objects
     case 'unknown type': $string.= '???';                    break;
     case 'string':
         $len = strlen($variable);
-        $variable = str_replace($search,$replace,substr($variable,0,$strlen),$count);
-        $variable = substr($variable,0,$strlen);
-        if ($len<$strlen) $string.= '"'.$variable.'"';
-        else $string.= 'string('.$len.'): "'.$variable.'"...';
+        //$variable = str_replace($search,$replace,substr($variable,0,$strlen),$count);
+        //$variable = substr($variable,0,$strlen);
+        if ($len<$strlen) $string.= $variable;
+        else $string.= $variable;
         break;
     case 'array':
         $len = count($variable);
