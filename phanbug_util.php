@@ -78,14 +78,14 @@ function phanbug_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$object
     case 'object':
         $id = array_search($variable,$objects,true);
         if ($id!==false)
-            $string.=get_class($variable).'#'.($id+1).' {...}';
+            $string.=get_class($variable).' {...}';
         else if($i==$depth)
             $string.=get_class($variable).' {...}';
         else {
             $id = array_push($objects,$variable);
             $array = (array)$variable;
             $spaces = str_repeat(' ',$i*2);
-            $string.= get_class($variable)."#$id\n".$spaces.'{';
+            $string.= get_class($variable)."\n".$spaces.'{';
             $properties = array_keys($array);
             foreach($properties as $property) {
                 $name = str_replace("\0",':',trim($property));
