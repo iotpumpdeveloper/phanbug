@@ -1,19 +1,20 @@
 <?php
 function phanbug_inspect($variable, $isSpecificVar = false, $depth, $variableName = '')
 {
+    $output = "";
     if (strlen($variableName) > 0) {
-        echo "Inspecting variable: $variableName\n";
+        $output .= "Inspecting variable: $variableName\n";
     }
     if (!$isSpecificVar) {
         $variable = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
-        echo phanbug_var_debug($variable, $depth);
+        $output .= phanbug_var_debug($variable, $depth);
     } else {
-        echo phanbug_var_debug($variable, $depth);
+        $output .= phanbug_var_debug($variable, $depth);
     }
 
-    print "\n\n";
+    $output .= "\n\n";
 
-    print "Call Trace:\n";
+    $output .= "Call Trace:\n";
 
     $e = new Exception();
     $trace = explode("\n", $e->getTraceAsString());
@@ -29,8 +30,10 @@ function phanbug_inspect($variable, $isSpecificVar = false, $depth, $variableNam
         $result[] = ($i + 1)  . '.' . substr($trace[$i], strpos($trace[$i], ' '));
     }
 
-    print implode("\n", $result);
-    print "\n\n";
+    $output .= implode("\n", $result);
+    $output .= "\n\n";
+    //now write the output to the tmp file
+    file_put_contents("/tmp/phanbug_output", $output);
 }
 
 function phanbug_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects = array())
