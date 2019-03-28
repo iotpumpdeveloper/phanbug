@@ -113,7 +113,11 @@ class Phanbug
             } 
         }
         $newFileContent = implode("\n", $lines);
+
+        $oldTimestamp = filemtime($sourceFile);
         file_put_contents($sourceFile, $newFileContent);
+        //also, modify the timestamp so that the system will treat it as "unchanged"
+        touch($sourceFile, $oldTimestamp);
     }
 
     private function addBreakPoint($sourceFile, $lineNumber, $options) {
