@@ -58,7 +58,7 @@ class Phanbug
         if (!$this->isSyntaxOk($sourceFile)) {
             //there is syntax errors, clean the breakpoint
             $this->cleanBreakpoints($sourceFile);
-            print "Error adding breakpoint\n";
+            print "Error adding breakpoint, syntax error\n";
         } else {
             //run the cmd
             $output = shell_exec($this->cmd);
