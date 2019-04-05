@@ -33,7 +33,7 @@ function phanbug_inspect($variable, $isSpecificVar = false, $depth, $variableNam
     $output .= implode("\n", $result);
     $output .= "\n\n";
     //now write the output to the tmp file
-    file_put_contents("/tmp/phanbug_output", $output);
+    file_put_contents("/tmp/phanbug_output", $output, \FILE_APPEND);
 }
 
 function phanbug_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects = array())
